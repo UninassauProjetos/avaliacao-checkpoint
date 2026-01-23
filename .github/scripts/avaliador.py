@@ -3,7 +3,6 @@ import sys
 from google import genai
 from github import Github, Auth
 
-# Configuração e Verificação de Variáveis de Ambiente
 def get_env_var(name):
     value = os.getenv(name)
     if not value:
@@ -20,17 +19,14 @@ except ValueError:
     print("Erro: PR_NUMBER deve ser um número inteiro.")
     sys.exit(1)
 
-# Inicializa o cliente da nova SDK do Google (google-genai)
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 def get_pr_diff():
-    # Correção da Autenticação do PyGithub (Novo padrão)
     auth = Auth.Token(GITHUB_TOKEN)
     g = Github(auth=auth)
     
     try:
         repo = g.get_repo(REPO_NAME)
-        # Correção: O método correto é get_pull, não get_pull_request
         pr = repo.get_pull(PR_NUMBER)
     except Exception as e:
         print(f"Erro ao acessar o repositório ou PR: {e}")
@@ -40,9 +36,7 @@ def get_pr_diff():
     print(f"Analisando PR #{PR_NUMBER} no repo {REPO_NAME}...")
     
     for file in pr.get_files():
-        # Filtra apenas arquivos de código relevantes
         if file.filename.endswith(('.dart', '.js', '.ts', '.tsx', '.py', '.java', '.kt', '.xml')): 
-            # patch pode ser None se o arquivo for binário ou muito grande, então tratamos isso
             patch_content = file.patch if file.patch else "Conteúdo binário ou muito grande omitido."
             files_changed.append(f"Arquivo: {file.filename}\nAlterações:\n{patch_content}")
     
@@ -70,7 +64,6 @@ def evaluate_code(diff_text):
     """
     
     try:
-        # Nova chamada da SDK google-genai
         response = client.models.generate_content(
             model='gemini-2.5-flash',
             contents=prompt
